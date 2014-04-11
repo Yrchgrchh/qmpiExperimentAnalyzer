@@ -10,7 +10,7 @@ RunExperimentDialog::RunExperimentDialog()
     resize(450,200);
 
     //just to allocate
-    m_runArguments << " " << " ";
+    m_runArguments << "-n" << " " << " ";
 
     m_mpichAppLine  = new QLineEdit(this);
     m_mpichAppLine->setPlaceholderText("Select mpich.exe path");
@@ -87,7 +87,7 @@ void RunExperimentDialog::openExperiment()
     if ( !fileName.isNull() )
     {
         m_expAppLine->setText(fileName);
-        m_runArguments.replace(1, fileName);
+        m_runArguments.replace(2, fileName);
         m_fullRunLine->setText("ku"); //just to emit the signal
     }
 }
@@ -114,7 +114,7 @@ void RunExperimentDialog::openLength()
 
 void RunExperimentDialog::numProcChanged(int num)
 {
-    m_runArguments.replace(0, QString("-%1").arg(num));
+    m_runArguments.replace(1, QString("%1").arg(num));
 
     if ( 0 != num)
         m_fullRunLine->setText("ku"); //just to emit the signal
@@ -122,6 +122,7 @@ void RunExperimentDialog::numProcChanged(int num)
 
 void RunExperimentDialog::fullRunLineChanged(QString s)
 {
+    (void)s;
     QString str(m_mpichAppPath);
     str.append(" ");
     str.append(m_runArguments.join(" "));
