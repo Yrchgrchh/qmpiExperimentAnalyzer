@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setWindowTitle(tr("Experiment Analyzer"));
 
+    memset(m_maxAxisValues, 0, NUM_RESULT_TYPES*sizeof(double));
+
     m_scrollArea.setParent(this);
     m_scrollArea.setWidgetResizable(true);
     m_scrollArea.setBackgroundRole(QPalette::Dark);
