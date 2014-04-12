@@ -104,7 +104,7 @@ void RunExperimentDialog::openFrequency()
 
 void RunExperimentDialog::openLength()
 {
-    QString fileName = QFileDialog::getOpenFileName( this, tr("Open File"), "", tr("Files (*.exe)") );
+    QString fileName = QFileDialog::getOpenFileName( this, tr("Open File"), "", tr("Files (*.txt)") );
 
     if ( !fileName.isNull() )
     {
@@ -133,6 +133,7 @@ void RunExperimentDialog::run()
 {
     m_experimentProc = new QProcess(this);
     connect(m_experimentProc,  SIGNAL(finished(int)), SLOT(experimentFinished(int)));
+    m_experimentProc->setProcessChannelMode(QProcess::MergedChannels);
 
     m_experimentProc->start(m_mpichAppPath, m_runArguments);
 }
@@ -153,7 +154,18 @@ void RunExperimentDialog::experimentFinished(int exitCode)
     if ( 0 == exitCode )
     {
         QMessageBox::information(this, tr("Experiment result"),
-                                 tr("Experiment has finished succesfully"));
+                                 tr("Experiment has succesfully finished\nSee res.xml for results"));
+
+
+        QFile outputFile("res.xml");
+        if ( !outputFile.open(QFile::WriteOnly) )
+            return;
+
+        outputFile.write("<root>\n");
+        outputFile.write(m_experimentProc->readAllStandardOutput());
+        outputFile.write("</root>");
+
+        outputFile.close();
     }
     else
     {
