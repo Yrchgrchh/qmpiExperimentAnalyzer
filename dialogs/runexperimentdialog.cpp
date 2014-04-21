@@ -2,6 +2,7 @@
 #include <QGridLayout>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QDebug>
 
 RunExperimentDialog::RunExperimentDialog()
     :QDialog()
@@ -29,6 +30,7 @@ RunExperimentDialog::RunExperimentDialog()
     //m_lengthTxtButton = new QPushButton("Open file", this);
     m_runButton       = new QPushButton("Run", this);
     m_clearButton     = new QPushButton("Clear", this);
+    m_readTempResButton = new QPushButton("Read", this);
 
     m_numOfProcLine = new QLabel("Enter the number of processes", this);
     m_numOfProcSpin = new QSpinBox(this);
@@ -53,6 +55,7 @@ RunExperimentDialog::RunExperimentDialog()
     layout->addWidget(m_fullRunLine,    3,0);
     layout->addWidget(m_runButton,      4,0);
     layout->addWidget(m_clearButton,    4,1);
+    layout->addWidget(m_readTempResButton, 5,0);
 
     setLayout(layout);
 
@@ -62,10 +65,10 @@ RunExperimentDialog::RunExperimentDialog()
     connect(m_expAppButton,    SIGNAL(clicked()), SLOT(openExperiment()));
     //connect(m_freqTxtButton,   SIGNAL(clicked()), SLOT(openFrequency()));
     //connect(m_lengthTxtButton, SIGNAL(clicked()), SLOT(openLength()));
-    connect(m_fullRunLine,     SIGNAL(textChanged(QString)), SLOT(fullRunLineChanged(QString)));
     connect(m_runButton,       SIGNAL(clicked()), SLOT(run()));
     connect(m_clearButton,     SIGNAL(clicked()), SLOT(clear()));
     connect(m_numOfProcSpin,   SIGNAL(valueChanged(int)), SLOT(numProcChanged(int)));
+    connect(m_readTempResButton, SIGNAL(clicked()), SLOT(readTempRes()));
 }
 
 void RunExperimentDialog::openMpich()
@@ -76,7 +79,7 @@ void RunExperimentDialog::openMpich()
     {
         m_mpichAppLine->setText(fileName);
         m_mpichAppPath = fileName;
-        m_fullRunLine->setText("ku"); //just to emit the signal
+        fullRunLineUpdate();
     }
 }
 
@@ -88,7 +91,7 @@ void RunExperimentDialog::openExperiment()
     {
         m_expAppLine->setText(fileName);
         m_runArguments.replace(2, fileName);
-        m_fullRunLine->setText("ku"); //just to emit the signal
+        fullRunLineUpdate();
     }
 }
 
@@ -117,32 +120,62 @@ void RunExperimentDialog::numProcChanged(int num)
     m_runArguments.replace(1, QString("%1").arg(num));
 
     if ( 0 != num)
-        m_fullRunLine->setText("ku"); //just to emit the signal
+        fullRunLineUpdate();
 }
 
-void RunExperimentDialog::fullRunLineChanged(QString s)
+void RunExperimentDialog::readTempRes()
 {
-    (void)s;
+    if ( m_experimentProc )
+    {
+        if ( QProcess::Running == m_experimentProc->state() )
+        {
+            QFile outputFile("res_temp.xml");
+
+            if ( !outputFile.open(QFile::WriteOnly) )
+                return;
+
+            outputFile.write(m_experimentProc->readAll());
+        }
+    }
+}
+
+void RunExperimentDialog::fullRunLineUpdate()
+{
     QString str(m_mpichAppPath);
     str.append(" ");
     str.append(m_runArguments.join(" "));
     m_fullRunLine->setText(str);
 }
 
-void RunExperimentDialog::run()
+bool RunExperimentDialog::runLineWasOverrided() const
 {
+    QString str(m_mpichAppPath);
+    str.append(" ");
+    str.append(m_runArguments.join(" "));
+
+    return (str != m_fullRunLine->text());
+}
+
+void RunExperimentDialog::run()
+{   
     m_experimentProc = new QProcess(this);
     connect(m_experimentProc,  SIGNAL(finished(int)), SLOT(experimentFinished(int)));
     m_experimentProc->setProcessChannelMode(QProcess::MergedChannels);
 
-    m_experimentProc->start(m_mpichAppPath, m_runArguments);
+    if ( runLineWasOverrided() )
+    {
+        m_experimentProc->start(m_fullRunLine->text());
+    }
+    else
+    {
+        m_experimentProc->start(m_mpichAppPath, m_runArguments);
+    }
 }
 
 void RunExperimentDialog::clear()
 {
     m_expAppLine->clear();
     m_mpichAppLine->clear();
-    //m_runArguments.clear();
     m_mpichAppPath.clear();
     m_numOfProcSpin->clear();
     m_numOfProcSpin->setValue(0);
@@ -151,13 +184,14 @@ void RunExperimentDialog::clear()
 
 void RunExperimentDialog::experimentFinished(int exitCode)
 {
+    QFile outputFile("res.xml");
+
     if ( 0 == exitCode )
     {
         QMessageBox::information(this, tr("Experiment result"),
                                  tr("Experiment has succesfully finished\nSee res.xml for results"));
 
 
-        QFile outputFile("res.xml");
         if ( !outputFile.open(QFile::WriteOnly) )
             return;
 
@@ -169,7 +203,15 @@ void RunExperimentDialog::experimentFinished(int exitCode)
     }
     else
     {
-        QMessageBox::critical(this, tr("Experiment result"),
-                              tr("Experiment has failed"));
+        if ( !outputFile.open(QFile::WriteOnly) )
+            return;
+
+
+        QString str(m_experimentProc->readAllStandardError());
+        str.append("\nSee res.xml for available stdout");
+        outputFile.write(m_experimentProc->readAllStandardOutput());
+        outputFile.close();
+
+        QMessageBox::critical(this, tr("Experiment has failed"), str);
     }
 }

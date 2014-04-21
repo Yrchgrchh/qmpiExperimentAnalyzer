@@ -29,6 +29,7 @@ class RunExperimentDialog : public QDialog
 
     QPushButton* m_runButton;
     QPushButton* m_clearButton;
+    QPushButton* m_readTempResButton;
 
     QStringList m_runArguments;
     QString     m_mpichAppPath;
@@ -37,13 +38,18 @@ class RunExperimentDialog : public QDialog
 public:
     RunExperimentDialog();
 
+private:
+    void fullRunLineUpdate();
+    bool runLineWasOverrided() const;
+
 private slots:
     void openMpich();
     void openExperiment();
     void openFrequency();
     void openLength();
     void numProcChanged(int);
-    void fullRunLineChanged(QString);
+    void readTempRes();
+
     void run();
     void clear();
     void experimentFinished(int);
