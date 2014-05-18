@@ -54,12 +54,10 @@ public:
     ~MainWindow();
 
     void resizeEvent(QResizeEvent* event);
-
+    void keyPressEvent(QKeyEvent* event);
     int  readInputFile(QString fileName);
+
     void drawResults();
-
-    int getSize() const { return m_experimentResults.size(); }
-
 private:
     Ui::MainWindow *ui;
 

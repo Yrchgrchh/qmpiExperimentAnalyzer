@@ -11,8 +11,11 @@ public:
         :QCustomPlot(),m_x(0.0), m_y(0.0){}
    ~MyCustomPlot(){}
 
-    void mouseMoveEvent(QMouseEvent *event);
-    void paintEvent(QPaintEvent *event);
+    //void mouseMoveEvent(QMouseEvent *event);
+
+    void mouseDoubleClickEvent(QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *event);
+    void paintEvent(QPaintEvent *event);    
 };
 
 #endif // MYCUSTOMPLOT_H

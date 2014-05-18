@@ -95,7 +95,7 @@ void RunExperimentDialog::openExperiment()
     }
 }
 
-void RunExperimentDialog::openFrequency()
+/*void RunExperimentDialog::openFrequency()
 {
     QString fileName = QFileDialog::getOpenFileName( this, tr("Open File"), "", tr("Files (*.txt)") );
 
@@ -113,7 +113,7 @@ void RunExperimentDialog::openLength()
     {
         m_lengthTxtLine->setText(fileName);
     }
-}
+}*/
 
 void RunExperimentDialog::numProcChanged(int num)
 {

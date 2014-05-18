@@ -14,8 +14,10 @@ class RunExperimentDialog : public QDialog
 
     QLineEdit* m_mpichAppLine;
     QLineEdit* m_expAppLine;
-    QLineEdit* m_freqTxtLine;
-    QLineEdit* m_lengthTxtLine;
+    QLineEdit* m_settingsFolderLine;
+
+    //QLineEdit* m_freqTxtLine;
+    //QLineEdit* m_lengthTxtLine;
 
     QPushButton* m_mpichAppButton;
     QPushButton* m_expAppButton;
@@ -45,8 +47,8 @@ private:
 private slots:
     void openMpich();
     void openExperiment();
-    void openFrequency();
-    void openLength();
+    //void openFrequency();
+    //void openLength();
     void numProcChanged(int);
     void readTempRes();
 

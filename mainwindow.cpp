@@ -101,7 +101,7 @@ void MainWindow::openFile()
  * */
 void MainWindow::openOptions()
 {
-    if ( 0 < getSize() )
+    if ( 0 < m_experimentResults.size() )
     {
         m_pOptionsDialog = new OptionsDialog(&m_plotsToShow, (int*)&m_xAxis, (int*)&m_yAxis);
         m_pOptionsDialog->exec();
@@ -145,6 +145,18 @@ void MainWindow::resizeEvent(QResizeEvent* event)
     {
         m_plots[i]->setFixedHeight(size().height() - 50);
         m_plots[i]->setFixedWidth(size().width() - 35);
+    }
+}
+
+/*
+ * Propagate Esc action to all plots
+ * */
+void MainWindow::keyPressEvent(QKeyEvent *event)
+{
+    if ( event->key() == Qt::Key_Escape )
+    {
+        for ( int i=0; i<m_plots.size(); i++ )
+            m_plots[i]->keyPressEvent(event);
     }
 }
 
@@ -274,6 +286,7 @@ void MainWindow::drawResults()
             curPlot->graph(counter)->setPen(QPen(Qt::GlobalColor(counter+7)));
             curPlot->graph(counter)->setData((toIterator.value())[m_xAxis],
                                              (toIterator.value())[m_yAxis]);
+            curPlot->graph(counter)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDisc, 5));
             counter++;
             toIterator++;
         }
